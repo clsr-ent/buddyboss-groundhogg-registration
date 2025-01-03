@@ -5,8 +5,7 @@
  * Description: Adds checkboxes for Terms & Newsletter on BuddyBoss register page; maps them to Groundhogg fields, confirms email, etc.
  * Version:     1.0.0
  * Author:      Closrr.com
- * Author URI:  https://github.com/your-username
- * License:     GPL-2.0+
+ * Author URI:  https://closrr.com/
  * Text Domain: groundhogg
  */
 
