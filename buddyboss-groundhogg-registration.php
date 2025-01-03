@@ -5,12 +5,12 @@ declare(strict_types=1);
  * Plugin Name: BuddyBoss + Groundhogg Registration
  * Plugin URI:  https://github.com/clsr-ent/buddyboss-groundhogg-registration
  * Description: Adds newsletter subscription checkbox to BuddyBoss register page and maps to Groundhogg fields
- * Version:     1.1.1
+ * Version:     1.1.2
  * Author:      Closrr.com
  * Author URI:  https://closrr.com/
  * Text Domain: groundhogg
  * Requires PHP: 8.0
- * Created:     2025-01-03 22:16:00 UTC
+ * Created:     2025-01-03 23:11:08 UTC
  * Created By:  clsr-ent
  */
 
@@ -20,15 +20,12 @@ if (!defined('ABSPATH')) {
 
 /**
  * Class BuddyBossGroundhoggRegistration
- * 
- * Handles the integration between BuddyBoss registration and Groundhogg
  */
 class BuddyBossGroundhoggRegistration {
     /**
      * Initialize the plugin
      */
     public function __construct() {
-        // Only add the newsletter checkbox, removed terms checkbox as it's handled by BuddyBoss
         add_action('bp_before_registration_submit_buttons', [$this, 'add_newsletter_checkbox'], 5);
         add_action('user_register', [$this, 'handle_user_registration']);
     }
@@ -103,7 +100,8 @@ class BuddyBossGroundhoggRegistration {
             'lname' => $wp_user->last_name,
             'email_address' => $wp_user->user_email,
             'gdpr_consent' => !empty($_POST['signup_newsletter']) ? 'accepted' : '',
-            'terms_agreement' => !empty($_POST['register-privacy-policy']) ? 'accepted' : '',
+            // Map BuddyBoss privacy policy acceptance to Groundhogg's terms_and_conditions
+            'terms_and_conditions' => !empty($_POST['register-privacy-policy']) ? 'yes' : '',
         ];
 
         $map = [
@@ -111,7 +109,7 @@ class BuddyBossGroundhoggRegistration {
             'lname' => 'last_name',
             'email_address' => 'email',
             'gdpr_consent' => 'meta',
-            'terms_agreement' => 'meta',
+            'terms_and_conditions' => 'meta',
         ];
 
         return \Groundhogg\generate_contact_with_map($data, $map);
@@ -124,8 +122,11 @@ class BuddyBossGroundhoggRegistration {
      * @return void
      */
     private function process_terms_agreement($contact): void {
-        // Using BuddyBoss's native terms checkbox field
         if (!empty($_POST['register-privacy-policy'])) {
+            // Set the native Groundhogg terms field
+            $contact->update_meta('terms_and_conditions', 'yes');
+            
+            // Also set the terms agreement status
             $contact->set_terms_agreement(\Groundhogg\Contact::Yes);
         }
     }
