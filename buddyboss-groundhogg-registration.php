@@ -3,7 +3,7 @@
  * Plugin Name: BuddyBoss + Groundhogg Registration
  * Plugin URI:  https://github.com/clsr-ent/buddyboss-groundhogg-registration
  * Description: Adds checkboxes for Terms & Newsletter on BuddyBoss register page; maps them to Groundhogg fields, confirms email, etc.
- * Version:     1.0.0
+ * Version:     1.0.2
  * Author:      Closrr.com
  * Author URI:  https://closrr.com/
  * Text Domain: groundhogg
@@ -56,27 +56,24 @@ function bb_groundhogg_on_user_registration( $user_id ) {
 
     // We'll store "accepted" in the GH fields if checkboxes are ticked
     $gdpr_consent  = ! empty( $_POST['signup_newsletter'] ) ? 'accepted' : '';
-    $terms_agree   = ! empty( $_POST['legal_agreement'] )   ? 'accepted' : '';
+    $terms_agree   = ! empty( $_POST['register-privacy-policy'] ) ? 'accepted' : '';
 
     // Prepare data array for generate_contact_with_map
-    // Keys match the "map" below. e.g. 'fname' => $wp_user->first_name
     $data = [
         'fname'           => $wp_user->first_name,
         'lname'           => $wp_user->last_name,
         'email_address'   => $wp_user->user_email,
-        // map these two to GH meta fields
         'gdpr_consent'    => $gdpr_consent,
         'terms_agreement' => $terms_agree,
     ];
 
     // Prepare the map: array keys (above) => GH fields
-    // For 'meta', we store them as meta keys in GH. For 'email', we store them as the contact's main email, etc.
     $map = [
         'fname'           => 'first_name',
         'lname'           => 'last_name',
         'email_address'   => 'email',
-        'gdpr_consent'    => 'meta', // store in meta key "gdpr_consent"
-        'terms_agreement' => 'meta', // store in meta key "terms_agreement"
+        'gdpr_consent'    => 'meta',
+        'terms_agreement' => 'meta',
     ];
 
     // Generate or update the contact
@@ -85,9 +82,14 @@ function bb_groundhogg_on_user_registration( $user_id ) {
         return;
     }
 
-    // Optionally, if you want to apply a tag to newsletter subscribers, do it here:
+    // Set terms agreement using the provided method
+    if ( $terms_agree === 'accepted' ) {
+        $contact->set_terms_agreement(\Groundhogg\Contact::Yes);
+    }
+
+    // Handle newsletter subscription
     if ( $gdpr_consent === 'accepted' ) {
-        $contact->apply_tag( 'newsletter-subscriber' ); // Replace with your desired tag name
+        $contact->apply_tag( 'newsletter-subscriber' );
 
         // Mark the email as confirmed in Groundhogg
         if ( class_exists( '\Groundhogg\Preferences' ) ) {
@@ -96,14 +98,8 @@ function bb_groundhogg_on_user_registration( $user_id ) {
                 $contact->get_id(),
                 \Groundhogg\Preferences::CONFIRMED,
                 \Groundhogg\Preferences::CONFIRMED,
-                0 // funnel_id (if you have one, replace 0 with actual ID)
+                0
             );
         }
     }
-
-    // If you'd like to do additional actions for terms_agreement:
-    // if ( $terms_agree === 'accepted' ) {
-    //     // e.g. apply a "Agreed to Terms" tag if you want
-    //     // $contact->apply_tag( 'agreed-to-terms' );
-    // }
 }
