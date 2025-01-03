@@ -14,8 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * 1) Output two checkboxes above the Turnstile (bp_before_registration_submit_buttons, priority=5).
- *    - If BuddyBoss already inserts an "I agree to Terms" checkbox, remove or modify the second block.
+ * 1) Output newsletter checkbox above the Turnstile (bp_before_registration_submit_buttons, priority=5).
  */
 add_action( 'bp_before_registration_submit_buttons', 'bb_groundhogg_add_registration_checkboxes', 5 );
 function bb_groundhogg_add_registration_checkboxes() {
@@ -31,21 +30,6 @@ function bb_groundhogg_add_registration_checkboxes() {
                    <?php checked( ! empty( $_POST['signup_newsletter'] ), 1 ); ?> />
             <label for="signup_newsletter" class="option-label">
                 <?php esc_html_e( 'Subscribe to our platform and product updates.', 'groundhogg' ); ?>
-            </label>
-        </div>
-    </div>
-
-    <!-- Terms-of-Service Checkbox -->
-    <div class="input-options checkbox-options">
-        <div class="bp-checkbox-wrap">
-            <input type="checkbox"
-                   name="legal_agreement"
-                   id="legal_agreement"
-                   value="1"
-                   class="bs-styled-checkbox"
-                   <?php checked( ! empty( $_POST['legal_agreement'] ), 1 ); ?> />
-            <label for="legal_agreement" class="option-label">
-                <?php esc_html_e( 'I agree to the Terms of Service and Privacy Policy.', 'groundhogg' ); ?>
             </label>
         </div>
     </div>
