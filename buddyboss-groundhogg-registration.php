@@ -4,13 +4,13 @@ declare(strict_types=1);
 /**
  * Plugin Name: BuddyBoss + Groundhogg Registration
  * Plugin URI:  https://github.com/clsr-ent/buddyboss-groundhogg-registration
- * Description: Adds checkboxes for Terms & Newsletter on BuddyBoss register page; maps them to Groundhogg fields, confirms email, etc.
- * Version:     1.1.0
+ * Description: Adds newsletter subscription checkbox to BuddyBoss register page and maps to Groundhogg fields
+ * Version:     1.1.1
  * Author:      Closrr.com
  * Author URI:  https://closrr.com/
  * Text Domain: groundhogg
  * Requires PHP: 8.0
- * Created:     2025-01-03 22:08:44 UTC
+ * Created:     2025-01-03 22:16:00 UTC
  * Created By:  clsr-ent
  */
 
@@ -28,7 +28,8 @@ class BuddyBossGroundhoggRegistration {
      * Initialize the plugin
      */
     public function __construct() {
-        add_action('bp_before_registration_submit_buttons', [$this, 'add_registration_checkboxes'], 5);
+        // Only add the newsletter checkbox, removed terms checkbox as it's handled by BuddyBoss
+        add_action('bp_before_registration_submit_buttons', [$this, 'add_newsletter_checkbox'], 5);
         add_action('user_register', [$this, 'handle_user_registration']);
     }
 
@@ -37,7 +38,7 @@ class BuddyBossGroundhoggRegistration {
      * 
      * @return void
      */
-    public function add_registration_checkboxes(): void {
+    public function add_newsletter_checkbox(): void {
         ?>
         <!-- Newsletter Checkbox -->
         <div class="input-options checkbox-options">
@@ -123,6 +124,7 @@ class BuddyBossGroundhoggRegistration {
      * @return void
      */
     private function process_terms_agreement($contact): void {
+        // Using BuddyBoss's native terms checkbox field
         if (!empty($_POST['register-privacy-policy'])) {
             $contact->set_terms_agreement(\Groundhogg\Contact::Yes);
         }
