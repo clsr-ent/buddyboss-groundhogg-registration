@@ -5,12 +5,12 @@ declare(strict_types=1);
  * Plugin Name: BuddyBoss + Groundhogg Registration
  * Plugin URI:  https://github.com/clsr-ent/buddyboss-groundhogg-registration
  * Description: Adds newsletter subscription checkbox to BuddyBoss register page and maps to Groundhogg fields
- * Version:     1.1.2
+ * Version:     1.1.3
  * Author:      Closrr.com
  * Author URI:  https://closrr.com/
  * Text Domain: groundhogg
  * Requires PHP: 8.0
- * Created:     2025-01-03 23:11:08 UTC
+ * Created:     2025-01-03 23:53:11 UTC
  * Created By:  clsr-ent
  */
 
@@ -95,13 +95,15 @@ class BuddyBossGroundhoggRegistration {
      * @return mixed
      */
     private function create_or_update_contact($wp_user) {
+        $current_time = current_time('mysql', true); // Get current time in UTC
+
         $data = [
             'fname' => $wp_user->first_name,
             'lname' => $wp_user->last_name,
             'email_address' => $wp_user->user_email,
             'gdpr_consent' => !empty($_POST['signup_newsletter']) ? 'accepted' : '',
-            // Map BuddyBoss privacy policy acceptance to Groundhogg's terms_and_conditions
             'terms_and_conditions' => !empty($_POST['register-privacy-policy']) ? 'yes' : '',
+            'terms_agreement_date' => !empty($_POST['register-privacy-policy']) ? $current_time : '',
         ];
 
         $map = [
@@ -110,6 +112,7 @@ class BuddyBossGroundhoggRegistration {
             'email_address' => 'email',
             'gdpr_consent' => 'meta',
             'terms_and_conditions' => 'meta',
+            'terms_agreement_date' => 'meta',
         ];
 
         return \Groundhogg\generate_contact_with_map($data, $map);
@@ -123,10 +126,13 @@ class BuddyBossGroundhoggRegistration {
      */
     private function process_terms_agreement($contact): void {
         if (!empty($_POST['register-privacy-policy'])) {
-            // Set the native Groundhogg terms field
-            $contact->update_meta('terms_and_conditions', 'yes');
+            $current_time = current_time('mysql', true); // Get current time in UTC
             
-            // Also set the terms agreement status
+            // Set native Groundhogg terms fields
+            $contact->update_meta('terms_and_conditions', 'yes');
+            $contact->update_meta('terms_agreement_date', $current_time);
+            
+            // Set terms agreement status
             $contact->set_terms_agreement(\Groundhogg\Contact::Yes);
         }
     }
